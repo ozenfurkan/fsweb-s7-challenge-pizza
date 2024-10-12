@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,6 +7,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import TableHead from "@mui/material/TableHead";
+import axios from "axios";
+
 import {
   FormControl,
   FormLabel,
@@ -30,14 +32,33 @@ const FormControlLabelStyle = {
   fontWeight: "bold",
 };
 
+const DOUGH_LIST = [
+  { dough: "thin", price: 0, label: "İnce" },
+  { dough: "normal", price: 50, label: "Normal" },
+];
+
+const SIZE_LIST = [
+  { size: "small", price: 0, label: "Küçük" },
+  { size: "medium", price: 50, label: "Orta" },
+  { size: "large", price: 100, label: "Büyük" },
+];
+
+////////////////////////////////////
+
 const Form = () => {
   const [size, setSize] = useState("");
   const [toppings, setToppings] = useState([]);
-  const navigate = useNavigate();
   const [adiniz, setAdiniz] = useState("");
-  const [quantity, setQuantity] = useState(1);
-
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
+  const [additionalTotal, setAdditionalTotal] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
   const [dough, setDough] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const navigate = useNavigate();
+
+  const unitPrice = 125;
+
   const handleSizeChange = (event) => {
     setSize(event.target.value);
   };
@@ -71,81 +92,107 @@ const Form = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(
-      `Siparişin ${size} boy pizza. Ek malzemeler: ${toppings.join(", ")}` // pizzayı bir ara buraya çağır
-    );
-    navigate("/order-success");
-  };
+    setSubmitLoading(true);
+    setErrorMessage("");
 
-  const quantityIncrease = () => {
-    setQuantity((prevQuantity) => prevQuantity + 1);
-  };
+    if (submitLoading) {
+      return;
+    }
 
-  const quantityDecrease = () => {
-    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+    axios({
+      method: "post",
+      url: "https://reqres.in/api/pizza",
+      data: {
+        size: size,
+        dough: dough,
+        toppings: toppings,
+        name: adiniz,
+        orderNote: orderNote,
+        totalPrice: totalPrice,
+        additionalTotalPrice: additionalTotal,
+      },
+    })
+      .then((response) => {
+        console.log(response.data);
+        navigate("/order-success", {
+          state: {
+            orderDetails: response.data,
+          },
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        setErrorMessage(
+          "İnternet bağlantısı yok veya başka bir hata oluştu. Lütfen tekrar deneyin."
+        );
+      })
+      .finally(() => {
+        setSubmitLoading(false);
+      });
   };
-
-  const toppingsList = [
-    "Pepperoni",
-    "Sosis",
-    "Kanada Jambonu",
-    "Tavuk Izgara",
-    "Soğan",
-    "Domates",
-    "Mısır",
-    "Sucuk",
-    "Jalepeno",
-    "Sarımsak",
-    "Biber",
-    "Ananas",
-    "Kabak",
-    "Zeytin",
-  ];
 
   // FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM
 
   return (
-    <Container maxWidth="sm">
-      <form onSubmit={handleSubmit}>
-        <Price price={25} rating={4.5} ratingCount={100} />
+    <>
+      <Container maxWidth="sm">
+        <Price />
 
-        <SizeandDoughSelect
-          size={size}
-          handleSizeChange={handleSizeChange}
-          dough={dough}
-          handleDoughChange={handleDoughChange}
-        />
+        <form onSubmit={handleSubmit}>
+          <SizeandDoughSelect
+            size={size}
+            handleSizeChange={handleSizeChange}
+            dough={dough}
+            handleDoughChange={handleDoughChange}
+          />
 
-        <EkMalzeme
-          toppings={toppings}
-          toppingsList={toppingsList}
-          handleToppingChange={handleToppingChange}
-        />
+          <Toppings
+            toppings={toppings}
+            handleToppingChange={handleToppingChange}
+          />
 
-        <NameInput handleAdinizChange={handleAdinizChange} />
+          <NameInput handleAdinizChange={handleAdinizChange} />
 
-        <SiparisNotu />
+          <SiparisNotu setOrderNote={setOrderNote} />
 
-        <QuantityandOrderSummary
-          quantityDecrease={quantityDecrease}
-          quantityIncrease={quantityIncrease}
-          setQuantity={setQuantity}
-          quantity={quantity}
-        />
+          {errorMessage && (
+            <p style={{ color: "red", marginTop: "10px" }}>{errorMessage}</p>
+          )}
 
-        <SubmitButton isSubmitDisabled={isSubmitDisabled()} />
-      </form>
-    </Container>
+          <QuantityandOrderSummary
+            unitPrice={unitPrice}
+            toppings={toppings}
+            size={size}
+            totalPrice={totalPrice}
+            additionalTotal={additionalTotal}
+            setAdditionalTotal={setAdditionalTotal}
+            setTotalPrice={setTotalPrice}
+          />
+
+          <SubmitButton
+            isSubmitDisabled={isSubmitDisabled()}
+            submitLoading={submitLoading}
+          />
+        </form>
+      </Container>
+    </>
   );
 };
-
 // FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM FORM
 
 // FİYAT PUAN & PUANLAMA SAYISI
 
-function Price({ price, rating, ratingCount }) {
+function Price() {
+  const pizzaName = "Margarita";
+  const price = 20;
+  const rating = 4.5;
+  const ratingCount = 120;
+
   return (
     <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Typography>{pizzaName}</Typography>
+      </Grid>
       <Grid item xs={6}>
         <Typography>{price} TL</Typography>
       </Grid>
@@ -177,24 +224,17 @@ function SizeandDoughSelect({
             value={size}
             onChange={handleSizeChange}
           >
-            <FormControlLabel
-              value="kucuk"
-              control={<Radio />}
-              label="Küçük"
-              style={FormControlLabelStyle}
-            />
-            <FormControlLabel
-              value="orta"
-              control={<Radio />}
-              label="Orta"
-              style={FormControlLabelStyle}
-            />
-            <FormControlLabel
-              value="buyuk"
-              control={<Radio />}
-              label="Büyük"
-              style={FormControlLabelStyle}
-            />
+            {SIZE_LIST.map((sizeObject) => {
+              return (
+                <FormControlLabel
+                  key={sizeObject.size}
+                  value={sizeObject.size}
+                  control={<Radio />}
+                  label={sizeObject.label}
+                  style={FormControlLabelStyle}
+                />
+              );
+            })}
           </RadioGroup>
         </FormControl>
       </Grid>
@@ -210,8 +250,14 @@ function SizeandDoughSelect({
             <MenuItem value="" disabled>
               Hamur Kalınlığını Seçiniz
             </MenuItem>
-            <MenuItem value="normal">Normal</MenuItem>
-            <MenuItem value="incedough">İnce Hamur</MenuItem>
+
+            {DOUGH_LIST.map((doughObject) => {
+              return (
+                <MenuItem key={doughObject.dough} value={doughObject.dough}>
+                  {doughObject.label}
+                </MenuItem>
+              );
+            })}
           </Select>
         </FormControl>
       </Grid>
@@ -236,7 +282,24 @@ function NameInput({ handleAdinizChange }) {
 
 // EK MALZEME SEÇİMİ
 
-function EkMalzeme({ toppings, handleToppingChange, toppingsList }) {
+function Toppings({ toppings, handleToppingChange }) {
+  const toppingsList = [
+    "Pepperoni",
+    "Sosis",
+    "Kanada Jambonu",
+    "Tavuk Izgara",
+    "Soğan",
+    "Domates",
+    "Mısır",
+    "Sucuk",
+    "Jalepeno",
+    "Sarımsak",
+    "Biber",
+    "Ananas",
+    "Kabak",
+    "Zeytin",
+  ];
+
   return (
     <Grid item xs={12}>
       <FormControl component="fieldset">
@@ -273,11 +336,12 @@ function EkMalzeme({ toppings, handleToppingChange, toppingsList }) {
 
 // SİPARİŞ NOTU
 
-function SiparisNotu() {
+function SiparisNotu({ setOrderNote }) {
   return (
     <Grid item xs={12}>
       <FormControl fullWidth>
         <TextField
+          onChange={(event) => setOrderNote(event.target.value)}
           id="siparisNotu"
           label="Sipariş Notu"
           multiline
@@ -293,11 +357,37 @@ function SiparisNotu() {
 // + - BUTONLARI ve SİPARİŞ ÖZETİ
 
 function QuantityandOrderSummary({
-  quantityDecrease,
-  quantityIncrease,
-  setQuantity,
-  quantity,
+  setAdditionalTotal,
+  setTotalPrice,
+  additionalTotal,
+  totalPrice,
+  size,
+  unitPrice,
+  toppings,
 }) {
+  const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    const sizePrice =
+      SIZE_LIST.find((sizeObject) => sizeObject.size === size)?.price || 0;
+
+    const toppingsPrice = toppings.length * 5;
+
+    const additionalTotal = sizePrice + toppingsPrice;
+
+    const finalPrice = (unitPrice + additionalTotal) * quantity;
+
+    setAdditionalTotal(additionalTotal * quantity);
+
+    setTotalPrice(finalPrice);
+  }, [size, quantity, toppings]);
+  const quantityIncrease = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+
+  const quantityDecrease = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+  };
   return (
     <>
       <Grid container spacing={3}>
@@ -328,15 +418,14 @@ function QuantityandOrderSummary({
               </TableHead>
               <TableBody>
                 <TableRow>
-                  <TableCell style={{ border: "none" }}>Subtotal</TableCell>
-                  <TableCell
-                    align="right"
-                    style={{ border: "none" }}
-                  ></TableCell>
+                  <TableCell style={{ border: "none" }}>Seçimler</TableCell>
+                  <TableCell align="right" style={{ border: "none" }}>
+                    {additionalTotal} TL
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell style={{ border: "none" }}>Total</TableCell>
-                  <TableCell align="right"></TableCell>
+                  <TableCell align="right">{totalPrice} TL</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -349,7 +438,7 @@ function QuantityandOrderSummary({
 
 // SİPARİŞ OLUŞTUR BUTONU
 
-function SubmitButton({ isSubmitDisabled }) {
+function SubmitButton({ isSubmitDisabled, submitLoading }) {
   return (
     <div style={{ display: "flex", justifyContent: "flex-end" }}>
       <Button
@@ -357,7 +446,7 @@ function SubmitButton({ isSubmitDisabled }) {
         type="submit"
         variant="contained"
         color="primary"
-        disabled={isSubmitDisabled}
+        disabled={isSubmitDisabled || submitLoading}
       >
         Siparişi Oluştur
       </Button>

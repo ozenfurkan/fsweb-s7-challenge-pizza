@@ -1,0 +1,81 @@
+.home-banner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 100%;
+  transform: translateX(-50%);
+  object-fit: cover;
+}
+
+.text-content {
+  color: #ffffff; /* Metin rengini beyaz yapar */
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: "roboto-condensed", sans-serif;
+}
+
+.firsat {
+  color: #ffffff; /* Metin rengini beyaz yapar */
+  position: absolute; /* Elementi konumlandırmak için */
+  top: 20%; /* Dikey olarak ortalar */
+  left: 50%; /* Yatay olarak ortalar */
+  transform: translate(-50%, -50%); /* Yatay ve dikey konumlandırmayı ayarlar */
+  text-align: center; /* Metni yatay olarak ortalar */
+  font-family: "satisfy", sans-serif; /* Fontu belirler */
+}
+
+.home-banner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 100%;
+  transform: translateX(-50%);
+  object-fit: cover;
+}
+h2 {
+  margin: 0 0 0 0; /* Yazı boyutunu 36 piksele ayarlar */
+}
+
+.text-content {
+  color: #ffffff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: "roboto-condensed", sans-serif;
+  font-size: 36px; /* Yazı boyutunu 36 piksele ayarlar */
+}
+
+h4 {
+  margin: 60 60 0 60; /* Yazı boyutunu 24 piksele ayarlar */
+}
+.firsat {
+  color: #ffffff;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: "satisfy", sans-serif;
+  font-size: 48px; /* Yazı boyutunu 48 piksele ayarlar */
+}
+
+.container-button {
+  /* Butonu yatay olarak ortalar */
+  left: 50%;
+  transform: translate(-50%);
+  color: #fdc913;
+  width: 200px;
+  height: 50px;
+  border-radius: 90px; /* Kenarları 25 piksel yuvarlatır */
+}
+
+.container {
+  padding-bottom: 150px; /* Butonun altında 40 piksel boşluk ekler */
+}

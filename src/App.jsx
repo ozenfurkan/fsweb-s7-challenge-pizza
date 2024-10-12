@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import OrderSuccess from "./Pages/OrderSuccess";
 import CreateOrder from "./Pages/CreateOrder";
+import Logo from "./Logo";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -16,8 +18,14 @@ const router = createBrowserRouter([
     element: <OrderSuccess />,
   },
 ]);
+
 const App = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <Logo />
+      <RouterProvider router={router} />
+    </>
+  );
 };
 
 export default App;

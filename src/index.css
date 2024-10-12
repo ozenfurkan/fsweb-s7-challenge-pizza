@@ -1,0 +1,15 @@
+.logo-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 25vh;
+  background-color: #ce2829;
+  margin: 0;
+  width: 100vw;
+  z-index: 1;
+}
+
+.logo {
+  height: auto;
+  z-index: 2;
+}
